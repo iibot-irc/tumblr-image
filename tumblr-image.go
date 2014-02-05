@@ -11,6 +11,7 @@ import (
 type Item struct {
   Title string `xml:"title"`
   Description string `xml:"description"`
+  Link string `xml:"link"`
   Guid string `xml:"guid"`
   PubDate string `xml:"pubDate"`
   Category []string `xml:"category"`
@@ -23,6 +24,7 @@ func (ns NoSnippet) Error() string {
 }
 
 var target = flag.String("rss", "", "tumblr rss feed url to poll")
+var use_link = flag.Bool("link", false, "whether to emit a link to the post, or directly link the images within")
 
 func GetSnippet(htmlblob string) (string, error) {
   re := regexp.MustCompile("<img src=\"(.*)\"/>");
@@ -55,11 +57,15 @@ func main() {
           if err != nil {
             log.Fatal("Error parsing rss xml: ", err)
           }
-          img, err := GetSnippet(decoded.Description)
-          if err != nil {
-            log.Fatal("Error grabbing image out of xml blob: ", err)
+          if *use_link {
+            fmt.Println(decoded.Link);
+          } else {
+            img, err := GetSnippet(decoded.Description)
+            if err != nil {
+              log.Fatal("Error grabbing image out of xml blob: ", err)
+            }
+            fmt.Println(img)
           }
-          fmt.Println(img)
           return;
         }
     }
